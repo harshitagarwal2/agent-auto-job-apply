@@ -48,6 +48,50 @@ To create a starter config without copying by hand:
 jobflow init-config --path jobflow.toml
 ```
 
+If you are operating through Claude Code, prefer the wrapper instead:
+
+```bash
+./scripts/claude/init-config.sh
+```
+
+## Claude Code operator workflow
+
+This repo now includes a Claude Code operator layer that sits on top of the existing `jobflow` CLI.
+
+- `CLAUDE.md` stores the project memory and safety rules Claude should load at session start.
+- `.claude/settings.json` grants wrapper-first permissions so routine work goes through checked-in scripts.
+- `.claude/skills/` contains the reusable daily-ops, queue-review, and guarded-apply skills.
+- `scripts/claude/*.sh` are the preferred entrypoints for setup, sync, listing, review, dry-run apply, and live apply.
+
+If `jobflow.toml` does not exist yet, initialize it first:
+
+```bash
+./scripts/claude/init-config.sh
+```
+
+Typical Claude-driven flow:
+
+```bash
+./scripts/claude/sync.sh
+./scripts/claude/list.sh --limit 25
+./scripts/claude/review.sh
+./scripts/claude/apply-dry-run.sh --job-id <job-id>
+```
+
+Live apply stays opt-in and guarded. Use it only after a successful dry run, only for Greenhouse or Lever, and only when all of the following are true:
+
+- `[apply].allow_live_submit = true`
+- the chosen source sets `apply_mode = "live_opt_in"`
+- the chosen source sets `allow_live_apply = true`
+- `api_key_env` is configured and the named environment variable is set
+- you use the checked-in wrapper plus an exact job-id confirmation
+
+```bash
+./scripts/claude/apply-live.sh --job-id <job-id> --confirm-job-id <job-id>
+```
+
+If `jobflow.toml` is missing, the operational wrappers fail closed and tell you how to create it.
+
 ## CLI commands
 
 ### Sync configured sources
@@ -84,6 +128,14 @@ jobflow apply-dry-run --config jobflow.toml --job-id <job-id>
 
 That command **does not submit** anything. It validates policy, prepares the provider-specific request preview when allowed, and writes a ledger row locally.
 
+### Live application (guarded)
+
+```bash
+jobflow apply-live --config jobflow.toml --job-id <job-id> --confirm-job-id <job-id>
+```
+
+This command delegates to the same `ApplyService` used for dry runs, but with `dry_run=False`. It remains guarded by the existing policy checks, provider credential requirements, and an explicit confirmation that must exactly match the target job id.
+
 ## Supported source families
 
 | Family | Discovery | Apply path in code | Notes |
@@ -97,7 +149,7 @@ That command **does not submit** anything. It validates policy, prepares the pro
 
 ## Configuration
 
-See `jobflow.example.toml` for a fully commented example. Relative paths are resolved from the config file directory.
+See `jobflow.example.toml` for a starter example. Relative paths are resolved from the config file directory.
 
 Recommended first sources for real daily usage:
 
@@ -109,6 +161,7 @@ Recommended first sources for real daily usage:
 ## Repository docs
 
 - `docs/ARCHITECTURE.md` — system layout and data flow
+- `docs/CLAUDE_CODE.md` — Claude operator runbook, task recipes, and safety policy
 - `docs/OPERATIONS.md` — daily operator workflow
 - `docs/SOURCE_POLICY.md` — source-family boundaries and safety rules
 - `CONTRIBUTING.md` — local development and contribution expectations
@@ -122,6 +175,7 @@ pytest
 The included tests prove:
 
 - policy blocking for non-apply-capable families
+- live-apply confirmation and credential guards
 - deduplication across source families
 - idempotent sync behavior
 
