@@ -3,10 +3,17 @@
 ## Development setup
 
 ```bash
-python -m venv .venv
+python3.12 -m venv .venv
 source .venv/bin/activate
 python -m pip install -e .[dev]
 pytest
+```
+
+For a repo-local smoke check of the Claude operator path:
+
+```bash
+JOBFLOW_CONFIG=jobflow.smoke.toml ./scripts/claude/sync.sh
+JOBFLOW_CONFIG=jobflow.smoke.toml ./scripts/claude/list.sh --limit 10
 ```
 
 ## Project rules

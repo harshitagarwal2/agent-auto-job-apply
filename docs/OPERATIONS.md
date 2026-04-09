@@ -2,7 +2,7 @@
 
 ## Daily workflow
 
-1. If `jobflow.toml` does not exist yet, initialize it with `./scripts/claude/init-config.sh` and then update it with the sources you actually want enabled.
+1. For a brand-new clone, run `./scripts/claude/bootstrap.sh`. If the environment already exists and only the config is missing, run `./scripts/claude/init-config.sh`.
 2. Prefer the Claude wrappers for routine operations. They inject `--config jobflow.toml`, fail closed if the config file is missing, and keep Claude on the supported execution path.
 
 ```bash
@@ -49,6 +49,17 @@ jobflow review --config jobflow.toml
 - Use Greenhouse and Lever as the primary structured sources.
 - Use Ashby and Workday where you have reliable feeds or exports.
 - Treat LinkedIn and Glassdoor as lead surfaces, not unattended submission targets.
+
+## Smoke-test workflow
+
+For a deterministic first run without secrets or personal lead files:
+
+```bash
+JOBFLOW_CONFIG=jobflow.smoke.toml ./scripts/claude/sync.sh
+JOBFLOW_CONFIG=jobflow.smoke.toml ./scripts/claude/list.sh --limit 10
+```
+
+Use that to validate the install before editing `jobflow.toml` for real sources.
 
 ## Local data
 

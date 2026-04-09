@@ -28,19 +28,51 @@ This v1 is intentionally honest about its boundaries:
 
 ## Quick start
 
+Python 3.12+ is required.
+
 ### Quick setup — if you've done this kind of thing before
 
 ```bash
-python -m venv .venv
+python3.12 -m venv .venv
 source .venv/bin/activate
 python -m pip install -e .[dev]
 cp jobflow.example.toml jobflow.toml
+```
+
+Then enable the sources you want in `jobflow.toml`, and only after that run:
+
+```bash
 jobflow sync --config jobflow.toml
 jobflow list --config jobflow.toml
 jobflow review --config jobflow.toml
 ```
 
-Then enable the sources you want in `jobflow.toml`.
+### First run with Claude Code (recommended)
+
+```bash
+git clone https://github.com/harshitagarwal2/agent-auto-job-apply.git
+cd agent-auto-job-apply
+./scripts/claude/bootstrap.sh
+```
+
+That wrapper:
+
+- creates `.venv/` if needed
+- installs the repo in editable mode with dev dependencies
+- creates `jobflow.toml` if it does not already exist
+
+Then edit `jobflow.toml` and enable the sources you actually want.
+
+### No-secrets smoke test
+
+If you want a deterministic first run before adding real company boards or personal lead exports:
+
+```bash
+JOBFLOW_CONFIG=jobflow.smoke.toml ./scripts/claude/sync.sh
+JOBFLOW_CONFIG=jobflow.smoke.toml ./scripts/claude/list.sh --limit 10
+```
+
+`jobflow.smoke.toml` uses checked-in fixture feeds, so it always returns sample jobs without secrets or personal data.
 
 To create a starter config without copying by hand:
 
@@ -54,6 +86,8 @@ If you are operating through Claude Code, prefer the wrapper instead:
 ./scripts/claude/init-config.sh
 ```
 
+For a fresh clone, prefer `./scripts/claude/bootstrap.sh` because the wrapper scripts require the repo-local `.venv/bin/jobflow` binary.
+
 ## Claude Code operator workflow
 
 This repo now includes a Claude Code operator layer that sits on top of the existing `jobflow` CLI.
@@ -63,11 +97,13 @@ This repo now includes a Claude Code operator layer that sits on top of the exis
 - `.claude/skills/` contains the reusable daily-ops, queue-review, and guarded-apply skills.
 - `scripts/claude/*.sh` are the preferred entrypoints for setup, sync, listing, review, dry-run apply, and live apply.
 
-If `jobflow.toml` does not exist yet, initialize it first:
+If `jobflow.toml` does not exist yet, initialize the repo first:
 
 ```bash
-./scripts/claude/init-config.sh
+./scripts/claude/bootstrap.sh
 ```
+
+If the environment already exists and you only need to recreate config, use `./scripts/claude/init-config.sh`.
 
 Typical Claude-driven flow:
 
@@ -151,6 +187,12 @@ This command delegates to the same `ApplyService` used for dry runs, but with `d
 
 See `jobflow.example.toml` for a starter example. Relative paths are resolved from the config file directory.
 
+Supporting local files included in the repo:
+
+- `jobflow.smoke.toml` — safe smoke-test config using checked-in fixtures
+- `.env.example` — example variable names for optional live-apply credentials
+- `manual/README.md` — manual/export feed formats and copy-ready sample files
+
 Recommended first sources for real daily usage:
 
 - Greenhouse boards for target companies
@@ -165,6 +207,15 @@ Recommended first sources for real daily usage:
 - `docs/OPERATIONS.md` — daily operator workflow
 - `docs/SOURCE_POLICY.md` — source-family boundaries and safety rules
 - `CONTRIBUTING.md` — local development and contribution expectations
+
+## What still needs your real data
+
+The repo is now polished for setup and dry-run operation, but a real daily workflow still needs your own inputs:
+
+- target companies or real Greenhouse/Lever board identifiers
+- optional manual/export JSON feeds under `manual/`
+- optional live-apply API keys via environment variables from `.env.example`
+- your personal resume/application facts if you want real submit-ready payloads
 
 ## Tests
 

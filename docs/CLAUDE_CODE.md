@@ -11,13 +11,32 @@ This repository supports Claude Code as the orchestration layer for the existing
 
 ## First-time setup
 
-If the repo does not have a `jobflow.toml` yet, initialize it through the wrapper:
+For a brand-new clone, bootstrap the repo through the wrapper:
+
+```bash
+./scripts/claude/bootstrap.sh
+```
+
+This handles the environment install and creates `jobflow.toml` if needed.
+
+If the repo already has a working `.venv/` and you only need a fresh config, initialize it through the lighter wrapper:
 
 ```bash
 ./scripts/claude/init-config.sh
 ```
 
 Then edit the generated config to enable the sources and policies you actually want.
+
+## No-secrets smoke test
+
+Before adding real boards or manual exports, you can run a deterministic smoke test:
+
+```bash
+JOBFLOW_CONFIG=jobflow.smoke.toml ./scripts/claude/sync.sh
+JOBFLOW_CONFIG=jobflow.smoke.toml ./scripts/claude/list.sh --limit 10
+```
+
+`jobflow.smoke.toml` uses checked-in fixture feeds and does not require secrets.
 
 ## Daily runbook
 
