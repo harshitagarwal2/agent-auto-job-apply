@@ -15,6 +15,8 @@ This project is a local-first job discovery and assisted application workflow fo
 - `src/jobflow/adapters/` — discovery adapters per source family
 - `src/jobflow/services/sync.py` — daily sync orchestration
 - `src/jobflow/services/apply.py` — guarded dry-run/live-apply preparation
+- `scripts/claude/` — wrapper scripts Claude Code should prefer for daily operations
+- `.claude/skills/` and `CLAUDE.md` — Claude Code operator memory and task skills
 
 ## Data flow
 
@@ -23,7 +25,8 @@ This project is a local-first job discovery and assisted application workflow fo
 3. Ranking computes a score against the configured search profile.
 4. Repository deduplicates jobs by company, title, and location fingerprint.
 5. Review state and application attempts are written to SQLite.
-6. Apply flow validates policy before generating a provider-specific preview.
+6. Apply flow validates policy before generating a provider-specific preview or live submission.
+7. Claude Code should orchestrate through the checked-in wrapper scripts rather than bypassing the CLI directly.
 
 ## Safety boundary
 
@@ -31,3 +34,4 @@ This project is a local-first job discovery and assisted application workflow fo
 - Greenhouse and Lever are apply-capable in code, but dry-run by default.
 - Ashby and Workday are discovery-focused in v1.
 - No anti-bot bypass logic belongs in this repository.
+- Live apply remains guarded by config flags, provider credentials, and an explicit confirmation at the CLI layer.
