@@ -1,0 +1,52 @@
+[database]
+path = ".local/jobflow-smoke.sqlite3"
+
+[profile]
+role_keywords = [
+  "software engineer",
+  "product manager",
+  "program manager",
+  "business analyst",
+]
+allowed_countries = ["US", "USA", "United States"]
+preferred_locations = ["Remote", "United States", "USA"]
+
+[apply]
+allow_live_submit = false
+default_source_tag = "jobflow-local"
+
+[[sources]]
+name = "fixture-greenhouse"
+family = "greenhouse"
+enabled = true
+company = "Acme"
+board_token = "acme"
+feed_path = "tests/fixtures/greenhouse_jobs.json"
+
+  [sources.policy]
+  discovery_enabled = true
+  apply_mode = "dry_run_only"
+  allow_live_apply = false
+
+[[sources]]
+name = "fixture-lever"
+family = "lever"
+enabled = true
+company = "Acme"
+site = "acme"
+feed_path = "tests/fixtures/lever_jobs.json"
+
+  [sources.policy]
+  discovery_enabled = true
+  apply_mode = "dry_run_only"
+  allow_live_apply = false
+
+[[sources]]
+name = "fixture-linkedin-manual"
+family = "linkedin"
+enabled = true
+feed_path = "tests/fixtures/linkedin_manual_leads.json"
+
+  [sources.policy]
+  discovery_enabled = true
+  apply_mode = "disabled"

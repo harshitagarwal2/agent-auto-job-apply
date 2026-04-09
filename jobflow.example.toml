@@ -16,12 +16,16 @@ exclude_keywords = ["staffing", "commission-only"]
 allow_live_submit = false
 default_source_tag = "jobflow-local"
 
+# Copy manual/examples files into manual/*.json before enabling manual/export sources.
+# For a deterministic first run, use jobflow.smoke.toml instead of enabling placeholders below.
+
 [[sources]]
 name = "example-greenhouse"
 family = "greenhouse"
 enabled = false
 company = "Example Co"
 board_token = "example"
+# api_key_env = "JOBFLOW_GREENHOUSE_API_KEY"
 
   [sources.policy]
   discovery_enabled = true
@@ -34,6 +38,7 @@ family = "lever"
 enabled = false
 company = "Example Co"
 site = "example"
+# api_key_env = "JOBFLOW_LEVER_API_KEY"
 
   [sources.policy]
   discovery_enabled = true
