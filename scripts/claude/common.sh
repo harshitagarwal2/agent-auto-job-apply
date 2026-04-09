@@ -12,7 +12,7 @@ fail() {
 
 require_config() {
   if [[ ! -f "$CONFIG_PATH" ]]; then
-    fail "Missing config at $CONFIG_PATH. Run './scripts/claude/init-config.sh' or copy jobflow.example.toml to jobflow.toml manually."
+    fail "Missing config at $CONFIG_PATH. Run './scripts/claude/bootstrap.sh' on first setup, or './scripts/claude/init-config.sh' if the environment already exists."
   fi
 }
 
@@ -29,7 +29,7 @@ resolve_jobflow() {
     printf '%s\n' "$ROOT_DIR/.venv/bin/jobflow"
     return
   fi
-  fail "Could not find the repo-local jobflow CLI at $ROOT_DIR/.venv/bin/jobflow. Install the repo with 'python -m venv .venv && .venv/bin/python -m pip install -e .[dev]'."
+  fail "Could not find the repo-local jobflow CLI at $ROOT_DIR/.venv/bin/jobflow. Run './scripts/claude/bootstrap.sh' first."
 }
 
 run_jobflow() {
