@@ -6,7 +6,7 @@ This repository uses Claude Code as an operator layer on top of the existing `jo
 
 - Prefer the checked-in wrappers in `scripts/claude/` over raw `jobflow` commands.
 - Use project skills from `.claude/skills/`; do not add or rely on legacy `.claude/commands/`.
-- `jobflow.toml` at the repo root is the default operator config. If it is missing, fail closed and tell the user to run `./scripts/claude/init-config.sh` or copy `jobflow.example.toml` manually.
+- `jobflow.toml` at the repo root is the default operator config. If it is missing, fail closed and tell the user to run `./scripts/claude/bootstrap.sh` for a fresh clone, or `./scripts/claude/init-config.sh` only when the environment is already installed.
 - LinkedIn and Glassdoor remain discovery-only/manual. Do not turn them into live apply targets.
 - Do not add anti-bot bypasses, browser evasion, CAPTCHA workarounds, or hidden-session automation.
 
@@ -20,11 +20,15 @@ This repository uses Claude Code as an operator layer on top of the existing `jo
 
 ## First-time setup
 
-If `jobflow.toml` is missing, initialize it through the checked-in wrapper:
+For a brand-new clone, use the bootstrap wrapper first:
 
-1. `./scripts/claude/init-config.sh`
+1. `./scripts/claude/bootstrap.sh`
 2. Edit `jobflow.toml` to enable the sources you want.
 3. Resume the safe workflow order above.
+
+If the virtual environment is already installed and you only need to recreate `jobflow.toml`, use `./scripts/claude/init-config.sh`.
+
+For a no-secrets smoke test after bootstrap, use `JOBFLOW_CONFIG=jobflow.smoke.toml` with the normal wrapper flow.
 
 ## Live apply guardrails
 

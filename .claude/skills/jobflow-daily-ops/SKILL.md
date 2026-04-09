@@ -9,7 +9,7 @@ Use this skill for the routine operator loop.
 
 ## Required sequence
 
-1. Confirm `jobflow.toml` exists at the repo root. If it does not, stop and tell the user to run `./scripts/claude/init-config.sh` or copy `jobflow.example.toml` manually.
+1. Confirm the repo is bootstrapped. If `.venv/bin/jobflow` or `jobflow.toml` is missing, stop and tell the user to run `./scripts/claude/bootstrap.sh`. If only the config is missing and the environment already exists, `./scripts/claude/init-config.sh` is acceptable.
 2. Run `./scripts/claude/sync.sh`.
 3. Run `./scripts/claude/list.sh --limit 25` unless the user requested a different limit or filter.
 4. Summarize the highest-signal jobs and call out anything that should move to review.
