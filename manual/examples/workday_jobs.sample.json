@@ -1,0 +1,13 @@
+{
+  "jobPostings": [
+    {
+      "title": "Software Engineer II",
+      "locationsText": "Remote, United States",
+      "timeType": "Full time",
+      "externalPath": "/en-US/example/job/Software-Engineer-II_JR-12345",
+      "bulletFields": ["JR-12345"],
+      "description": "Build backend systems for distributed product teams.",
+      "postedOn": "2026-04-01T12:00:00Z"
+    }
+  ]
+}

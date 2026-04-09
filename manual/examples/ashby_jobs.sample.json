@@ -1,0 +1,18 @@
+{
+  "jobBoard": {
+    "jobPostings": [
+      {
+        "id": "ashby-001",
+        "title": "Program Manager",
+        "location": {
+          "name": "Remote, United States"
+        },
+        "employmentType": "Full-time",
+        "descriptionPlain": "Coordinate cross-functional launches across product and engineering teams.",
+        "jobUrl": "https://jobs.example.com/ashby-001",
+        "applyUrl": "https://jobs.example.com/ashby-001/apply",
+        "publishedAt": "2026-04-01T12:00:00Z"
+      }
+    ]
+  }
+}
