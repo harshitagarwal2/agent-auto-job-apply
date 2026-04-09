@@ -31,7 +31,17 @@ class BaseDiscoveryAdapter(ABC):
     ) -> Any:
         feed_path = source.resolved_feed_path(base_dir)
         if feed_path is not None:
-            return json.loads(feed_path.read_text())
+            if not feed_path.exists():
+                raise ValueError(
+                    f"Source '{source.name}' points to missing feed file: {feed_path}. "
+                    "Create it, copy a sample from manual/examples/, or disable the source."
+                )
+            try:
+                return json.loads(feed_path.read_text())
+            except json.JSONDecodeError as exc:
+                raise ValueError(
+                    f"Source '{source.name}' has invalid JSON in {feed_path}: {exc.msg}"
+                ) from exc
 
         url = source.jobs_url or default_url
         if url is None:
