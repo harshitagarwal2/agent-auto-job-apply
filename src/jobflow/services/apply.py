@@ -37,64 +37,91 @@ class ApplyService:
         if job is None:
             raise KeyError(f"Job not found: {job_id}")
 
-        source_record, source_config = self._select_source(job_id, config)
+        source_record, source_config = self._select_source(
+            job_id, config, dry_run=dry_run
+        )
         try:
             ensure_can_apply(source_config, config.apply, dry_run=dry_run)
+            if source_config.family == SourceFamily.GREENHOUSE:
+                preview = _greenhouse_preview(
+                    source_config, source_record.external_id, profile, dry_run
+                )
+            elif source_config.family == SourceFamily.LEVER:
+                preview = _lever_preview(
+                    source_config, source_record.external_id, profile, dry_run
+                )
+            else:
+                preview = self._blocked_preview(
+                    source=source_config,
+                    dry_run=dry_run,
+                    note=f"{source_config.family.value} is not apply-capable in v1",
+                )
         except PolicyViolation as exc:
-            preview = ApplyPreview(
-                status="blocked",
-                job_id=job.id,
-                source_name=source_config.name,
-                family=source_config.family,
+            preview = self._blocked_preview(
+                source=source_config,
                 dry_run=dry_run,
-                endpoint=None,
                 note=str(exc),
             )
-            self.repo.record_application(preview)
-            return preview
-
-        if source_config.family == SourceFamily.GREENHOUSE:
-            preview = _greenhouse_preview(
-                source_config, source_record.external_id, profile, dry_run
-            )
-        elif source_config.family == SourceFamily.LEVER:
-            preview = _lever_preview(
-                source_config, source_record.external_id, profile, dry_run
-            )
-        else:
-            preview = ApplyPreview(
-                status="blocked",
-                job_id=job.id,
-                source_name=source_config.name,
-                family=source_config.family,
-                dry_run=dry_run,
-                note=f"{source_config.family.value} is not apply-capable in v1",
-            )
-            self.repo.record_application(preview)
-            return preview
 
         preview.job_id = job.id
         preview.source_name = source_config.name
         self.repo.record_application(preview)
         return preview
 
-    def _select_source(self, job_id: str, config: AppConfig):
-        sources = self.repo.get_sources_for_job(job_id)
-        ordered_names = {source.name: source for source in config.sources}
-
-        preferred = next(
-            (s for s in sources if s.family in {"greenhouse", "lever"}), None
+    def _blocked_preview(
+        self, *, source: SourceConfig, dry_run: bool, note: str
+    ) -> ApplyPreview:
+        return ApplyPreview(
+            status="blocked",
+            job_id="",
+            source_name="",
+            family=source.family,
+            dry_run=dry_run,
+            endpoint=None,
+            note=note,
         )
-        source_record = preferred or (sources[0] if sources else None)
-        if source_record is None:
+
+    def _select_source(self, job_id: str, config: AppConfig, *, dry_run: bool):
+        source_records = self.repo.get_sources_for_job(job_id)
+        config_by_name = {source.name: source for source in config.sources}
+
+        if not source_records:
             raise RuntimeError(f"No source records found for job {job_id}")
 
-        source_config = ordered_names.get(source_record.source_name)
-        if source_config is None:
-            raise RuntimeError(
-                f"Source config '{source_record.source_name}' is missing"
-            )
-        return source_record, source_config
+        indexed_sources: list[tuple[int, Any, SourceConfig]] = []
+        for index, configured_source in enumerate(config.sources):
+            matching_records = [
+                record
+                for record in source_records
+                if record.source_name == configured_source.name
+            ]
+            for record in matching_records:
+                indexed_sources.append((index, record, configured_source))
+
+        for record in sorted(
+            source_records, key=lambda item: (item.source_name, item.id)
+        ):
+            if record.source_name in config_by_name:
+                continue
+            raise RuntimeError(f"Source config '{record.source_name}' is missing")
+
+        if not indexed_sources:
+            raise RuntimeError(f"No configured sources found for job {job_id}")
+
+        ordered_candidates = sorted(
+            indexed_sources,
+            key=lambda item: (item[0], item[1].source_name, item[1].id),
+        )
+
+        for _, record, configured_source in ordered_candidates:
+            try:
+                ensure_can_apply(configured_source, config.apply, dry_run=dry_run)
+                return record, configured_source
+            except PolicyViolation:
+                continue
+
+        _, record, configured_source = ordered_candidates[0]
+        return record, configured_source
 
 
 def _greenhouse_preview(
@@ -209,6 +236,11 @@ def _post_lever(
     endpoint: str, *, api_key: str, payload: dict[str, Any]
 ) -> dict[str, Any]:
     with httpx.Client(timeout=20.0) as client:
-        response = client.post(endpoint, params={"key": api_key}, json=payload)
-        response.raise_for_status()
-        return response.json()
+        try:
+            response = client.post(endpoint, params={"key": api_key}, json=payload)
+            response.raise_for_status()
+            return response.json()
+        except httpx.HTTPError as exc:
+            raise PolicyViolation(
+                "lever live apply request failed; credential-bearing URLs are not echoed in errors"
+            ) from exc

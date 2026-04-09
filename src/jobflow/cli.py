@@ -16,11 +16,27 @@ app = typer.Typer(help="Local-first job discovery and assisted apply workflow")
 
 
 def _bootstrap(config_path: Path):
-    config, base_dir = load_config(config_path, allow_missing=True)
+    try:
+        config, base_dir = load_config(config_path, allow_missing=False)
+    except FileNotFoundError as exc:
+        typer.secho(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
     engine = make_engine(config.resolved_database_path(base_dir))
     init_db(engine)
     repo = JobRepository(engine)
     return config, base_dir, repo
+
+
+def _run_apply(*, job_id: str, config: Path, dry_run: bool) -> None:
+    loaded_config, base_dir, repo = _bootstrap(config)
+    preview = ApplyService(repo).apply(
+        config=loaded_config,
+        base_dir=base_dir,
+        job_id=job_id,
+        profile=ApplicantProfile(),
+        dry_run=dry_run,
+    )
+    typer.echo(preview.model_dump_json(indent=2))
 
 
 @app.command("init-config")
@@ -155,15 +171,25 @@ def apply_dry_run(
         DEFAULT_CONFIG_PATH, exists=False, help="Path to config TOML"
     ),
 ) -> None:
-    loaded_config, base_dir, repo = _bootstrap(config)
-    preview = ApplyService(repo).apply(
-        config=loaded_config,
-        base_dir=base_dir,
-        job_id=job_id,
-        profile=ApplicantProfile(),
-        dry_run=True,
-    )
-    typer.echo(preview.model_dump_json(indent=2))
+    _run_apply(job_id=job_id, config=config, dry_run=True)
+
+
+@app.command("apply-live")
+def apply_live(
+    job_id: str = typer.Option(..., help="Job id to submit live"),
+    confirm_job_id: str = typer.Option(
+        ...,
+        help="Repeat the exact job id to confirm live submission",
+    ),
+    config: Path = typer.Option(
+        DEFAULT_CONFIG_PATH, exists=False, help="Path to config TOML"
+    ),
+) -> None:
+    if confirm_job_id != job_id:
+        raise typer.BadParameter(
+            "--confirm-job-id must exactly match --job-id for live submit"
+        )
+    _run_apply(job_id=job_id, config=config, dry_run=False)
 
 
 if __name__ == "__main__":  # pragma: no cover
