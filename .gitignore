@@ -10,5 +10,10 @@ build/
 jobflow.toml
 CLAUDE.local.md
 .claude/settings.local.json
+/manual/*.json
+/manual/*.jsonl
+.env
+.env.*
+!.env.example
 *.log
 .DS_Store
