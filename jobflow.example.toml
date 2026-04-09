@@ -1,0 +1,72 @@
+[database]
+path = ".local/jobflow.sqlite3"
+
+[profile]
+role_keywords = [
+  "software engineer",
+  "product manager",
+  "program manager",
+  "business analyst",
+]
+allowed_countries = ["US", "USA", "United States"]
+preferred_locations = ["Remote", "United States", "USA"]
+exclude_keywords = ["staffing", "commission-only"]
+
+[apply]
+allow_live_submit = false
+default_source_tag = "jobflow-local"
+
+[[sources]]
+name = "example-greenhouse"
+family = "greenhouse"
+enabled = false
+company = "Example Co"
+board_token = "example"
+
+  [sources.policy]
+  discovery_enabled = true
+  apply_mode = "dry_run_only"
+  allow_live_apply = false
+
+[[sources]]
+name = "example-lever"
+family = "lever"
+enabled = false
+company = "Example Co"
+site = "example"
+
+  [sources.policy]
+  discovery_enabled = true
+  apply_mode = "dry_run_only"
+
+[[sources]]
+name = "linkedin-manual-leads"
+family = "linkedin"
+enabled = false
+feed_path = "manual/linkedin_leads.json"
+
+  [sources.policy]
+  discovery_enabled = true
+  apply_mode = "disabled"
+
+[[sources]]
+name = "glassdoor-manual-leads"
+family = "glassdoor"
+enabled = false
+feed_path = "manual/glassdoor_leads.json"
+
+  [sources.policy]
+  discovery_enabled = true
+  apply_mode = "disabled"
+
+[[sources]]
+name = "ashby-export"
+family = "ashby"
+enabled = false
+feed_path = "manual/ashby_jobs.json"
+
+[[sources]]
+name = "workday-export"
+family = "workday"
+enabled = false
+feed_path = "manual/workday_jobs.json"

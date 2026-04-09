@@ -1,0 +1,15 @@
+{
+  "jobs": [
+    {
+      "id": 101,
+      "internal_job_id": 2001,
+      "title": "Software Engineer II",
+      "updated_at": "2026-04-01T12:00:00Z",
+      "location": {
+        "name": "Remote, United States"
+      },
+      "absolute_url": "https://boards.greenhouse.io/acme/jobs/101",
+      "content": "Build backend systems for product teams across the United States."
+    }
+  ]
+}

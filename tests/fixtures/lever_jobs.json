@@ -1,0 +1,16 @@
+[
+  {
+    "id": "abc-123",
+    "text": "Software Engineer II",
+    "categories": {
+      "location": "Remote, United States",
+      "commitment": "Full-time",
+      "team": "Engineering"
+    },
+    "country": "US",
+    "descriptionPlain": "Build backend systems for product teams across the United States.",
+    "hostedUrl": "https://jobs.lever.co/acme/abc-123",
+    "applyUrl": "https://jobs.lever.co/acme/abc-123/apply",
+    "workplaceType": "remote"
+  }
+]
