@@ -12,8 +12,10 @@ from jobflow.domain import AppConfig
 
 
 DEFAULT_CONFIG_PATH = Path("jobflow.toml")
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+EXAMPLE_CONFIG_PATH = PROJECT_ROOT / "jobflow.example.toml"
 
-EXAMPLE_CONFIG = """[database]
+_FALLBACK_EXAMPLE_CONFIG = """[database]
 path = ".local/jobflow.sqlite3"
 
 [profile]
@@ -35,17 +37,17 @@ board_token = "example"
   [sources.policy]
   discovery_enabled = true
   apply_mode = "dry_run_only"
-
-[[sources]]
-name = "linkedin-manual-leads"
-family = "linkedin"
-enabled = false
-feed_path = "manual/linkedin_leads.json"
-
-  [sources.policy]
-  discovery_enabled = true
-  apply_mode = "disabled"
+  allow_live_apply = false
 """
+
+
+def _load_example_config() -> str:
+    if EXAMPLE_CONFIG_PATH.exists():
+        return EXAMPLE_CONFIG_PATH.read_text()
+    return _FALLBACK_EXAMPLE_CONFIG
+
+
+EXAMPLE_CONFIG = _load_example_config()
 
 
 def load_config(

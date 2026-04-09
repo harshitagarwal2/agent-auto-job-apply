@@ -38,6 +38,7 @@ site = "example"
   [sources.policy]
   discovery_enabled = true
   apply_mode = "dry_run_only"
+  allow_live_apply = false
 
 [[sources]]
 name = "linkedin-manual-leads"
